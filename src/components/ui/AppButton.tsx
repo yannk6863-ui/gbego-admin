@@ -1,20 +1,14 @@
 import React from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  PressableProps,
-  ViewStyle,
-} from "react-native";
 import { theme } from "../../theme/theme";
 import { AppText } from "./AppText";
 
 type Variant = "primary" | "outline" | "ghost";
 
-type Props = PressableProps & {
+type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   title: string;
   variant?: Variant;
   loading?: boolean;
-  style?: ViewStyle;
+  style?: React.CSSProperties;
 };
 
 export function AppButton({
@@ -27,22 +21,25 @@ export function AppButton({
 }: Props) {
   const isDisabled = disabled || loading;
 
-  const base: ViewStyle = {
+  const base: React.CSSProperties = {
     height: 52,
     borderRadius: theme.radius.md,
+    display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: theme.spacing.lg,
+    paddingLeft: theme.spacing.lg,
+    paddingRight: theme.spacing.lg,
     width: "100%",
     opacity: isDisabled ? 0.6 : 1,
+    cursor: isDisabled ? "not-allowed" : "pointer",
+    border: "none",
   };
 
-  const variants: Record<Variant, ViewStyle> = {
-    primary: { backgroundColor: theme.colors.primary, ...theme.shadow.card },
+  const variants: Record<Variant, React.CSSProperties> = {
+    primary: { backgroundColor: theme.colors.primary, boxShadow: "0 6px 12px rgba(0,0,0,0.08)" },
     outline: {
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
+      border: `1px solid ${theme.colors.border}`,
     },
     ghost: { backgroundColor: `${theme.colors.muted}14` },
   };
@@ -51,23 +48,28 @@ export function AppButton({
     variant === "primary" ? theme.colors.surface : theme.colors.text;
 
   return (
-    <Pressable
+    <button
       {...props}
       disabled={isDisabled}
-      style={({ pressed }) => [
-        base,
-        variants[variant],
-        pressed && !isDisabled ? { transform: [{ scale: 0.98 }], opacity: 0.96 } : null,
-        style,
-      ]}
+      style={{ ...base, ...variants[variant], ...style }}
     >
       {loading ? (
-        <ActivityIndicator color={textColor} />
+        <span
+          style={{
+            width: 20,
+            height: 20,
+            border: `2px solid ${textColor}`,
+            borderTopColor: "transparent",
+            borderRadius: "50%",
+            display: "inline-block",
+            animation: "spin 0.7s linear infinite",
+          }}
+        />
       ) : (
         <AppText weight="700" style={{ color: textColor }}>
           {title}
         </AppText>
       )}
-    </Pressable>
+    </button>
   );
 }

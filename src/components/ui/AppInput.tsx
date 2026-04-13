@@ -1,13 +1,12 @@
 import React, { useMemo, useState } from "react";
-import { TextInput, View, TextInputProps, ViewStyle } from "react-native";
 import { theme } from "../../theme/theme";
 import { AppText } from "./AppText";
 
-type Props = TextInputProps & {
+type Props = React.InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
   error?: string;
   hint?: string;
-  containerStyle?: ViewStyle;
+  containerStyle?: React.CSSProperties;
 };
 
 export function AppInput({
@@ -15,11 +14,11 @@ export function AppInput({
   error,
   hint,
   containerStyle,
-  editable,
+  disabled,
   ...props
 }: Props) {
   const [focused, setFocused] = useState(false);
-  const isDisabled = editable === false;
+  const isDisabled = disabled;
 
   const borderColor = useMemo(() => {
     if (error) return theme.colors.danger;
@@ -28,27 +27,28 @@ export function AppInput({
   }, [error, focused]);
 
   return (
-    <View style={containerStyle}>
+    <div style={containerStyle}>
       {label && (
-        <AppText variant="small" weight="600" style={{ marginBottom: 6 }}>
+        <AppText variant="small" weight="600" style={{ display: "block", marginBottom: 6 }}>
           {label}
         </AppText>
       )}
 
-      <View
+      <div
         style={{
           height: 52,
           borderRadius: theme.radius.md,
-          borderWidth: 1,
-          borderColor,
+          border: `1px solid ${borderColor}`,
           backgroundColor: isDisabled ? theme.colors.bg : theme.colors.surface,
-          paddingHorizontal: theme.spacing.lg,
-          justifyContent: "center",
-          ...(focused && !error ? { ...theme.shadow.card } : null),
+          paddingLeft: theme.spacing.lg,
+          paddingRight: theme.spacing.lg,
+          display: "flex",
+          alignItems: "center",
+          ...(focused && !error ? { boxShadow: "0 6px 12px rgba(0,0,0,0.08)" } : {}),
         }}
       >
-        <TextInput
-          editable={editable}
+        <input
+          disabled={isDisabled}
           onFocus={(event) => {
             setFocused(true);
             props.onFocus?.(event);
@@ -57,15 +57,18 @@ export function AppInput({
             setFocused(false);
             props.onBlur?.(event);
           }}
-          placeholderTextColor={theme.colors.muted}
           style={{
             fontSize: theme.typography.body,
             color: isDisabled ? theme.colors.muted : theme.colors.text,
             fontWeight: "500",
+            border: "none",
+            outline: "none",
+            background: "transparent",
+            width: "100%",
           }}
           {...props}
         />
-      </View>
+      </div>
 
       {error && (
         <AppText
@@ -78,10 +81,10 @@ export function AppInput({
       )}
 
       {!error && hint ? (
-        <AppText variant="tiny" muted style={{ marginTop: 6 }}>
+        <AppText variant="tiny" muted style={{ display: "block", marginTop: 6 }}>
           {hint}
         </AppText>
       ) : null}
-    </View>
+    </div>
   );
 }

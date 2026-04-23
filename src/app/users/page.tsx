@@ -60,7 +60,7 @@ const UserTableRow = memo(function UserTableRow({ row, actionLoading, actionLoad
       </td>
       <td>
         <span className={`badge ${row.isSuspended ? 'badge-suspended' : 'badge-approved'}`}>
-          {row.isSuspended ? 'Suspended' : 'Active'}
+          {row.isSuspended ? 'Suspendu' : 'Actif'}
         </span>
       </td>
       <td>
@@ -81,7 +81,7 @@ const UserTableRow = memo(function UserTableRow({ row, actionLoading, actionLoad
             onClick={() => onSuspend(row.id, false)}
             disabled={actionLoading}
           >
-            {actionLoading && actionLoadingKey === `suspend:${row.id}:0` ? 'Processing...' : 'Unsuspend'}
+            {actionLoading && actionLoadingKey === `suspend:${row.id}:0` ? 'Traitement...' : 'Reactiver'}
           </button>
         ) : (
           <button
@@ -90,7 +90,7 @@ const UserTableRow = memo(function UserTableRow({ row, actionLoading, actionLoad
             onClick={() => onSuspend(row.id, true)}
             disabled={actionLoading}
           >
-            {actionLoading && actionLoadingKey === `suspend:${row.id}:1` ? 'Processing...' : 'Suspend'}
+            {actionLoading && actionLoadingKey === `suspend:${row.id}:1` ? 'Traitement...' : 'Suspendre'}
           </button>
         )}
       </td>
@@ -101,15 +101,15 @@ const UserTableRow = memo(function UserTableRow({ row, actionLoading, actionLoad
 const toSearchable = (value: unknown) => (typeof value === 'string' ? value.toLowerCase() : '');
 
 const formatDate = (value?: string | null) => {
-  if (!value) return 'N/A';
+  if (!value) return 'N/D';
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
+  return Number.isNaN(date.getTime()) ? 'N/D' : date.toLocaleDateString('fr-FR');
 };
 
 const formatTime = (value?: string | null) => {
-  if (!value) return 'N/A';
+  if (!value) return 'N/D';
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? 'N/A' : date.toLocaleTimeString();
+  return Number.isNaN(date.getTime()) ? 'N/D' : date.toLocaleTimeString('fr-FR');
 };
 
 const FILTERS = ['all', 'active', 'suspended', 'riders', 'drivers'] as const;
@@ -178,15 +178,15 @@ export default function UsersPage() {
       }
     } catch (err) {
       console.error('Error loading users:', err);
-      setError('Unable to load users.');
+      setError('Impossible de charger les utilisateurs.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleSuspend = useCallback(async (userId: string, suspend: boolean) => {
-    const actionLabel = suspend ? 'suspend' : 'unsuspend';
-    if (!confirm(`Are you sure you want to ${actionLabel} this user?`)) {
+    const actionLabel = suspend ? 'suspendre' : 'reactiver';
+    if (!confirm(`Confirmez-vous vouloir ${actionLabel} cet utilisateur ?`)) {
       return;
     }
 
@@ -220,7 +220,7 @@ export default function UsersPage() {
         await loadUsers();
       } catch (err) {
         console.error('Error updating user:', err);
-        alert('Failed to update user status');
+        alert("Echec de la mise a jour du statut de l'utilisateur");
       } finally {
         setActionLoading(false);
         setActionLoadingKey(null);
@@ -245,17 +245,17 @@ export default function UsersPage() {
     () =>
       filteredUsers.map((user) => ({
         id: user.id,
-        fullName: user.full_name || 'Unnamed user',
-        phone: user.phone || 'N/A',
-        role: user.role || 'unknown',
+        fullName: user.full_name || 'Utilisateur sans nom',
+        phone: user.phone || 'N/D',
+        role: user.role === 'driver' ? 'Chauffeur' : user.role === 'rider' ? 'Passager' : 'Inconnu',
         roleBadgeClass: user.role === 'driver' ? 'badge-active' : 'badge-pending',
         isSuspended: Boolean(user.is_suspended),
         createdDate: formatDate(user.created_at),
         createdTime: formatTime(user.created_at),
         riskLabel: (() => {
           const flags = abuseFlagsByUser[user.id] || [];
-          if (flags.length === 0) return 'None';
-          return flags.some((flag) => flag.severity === 'restriction') ? 'High' : 'Review';
+          if (flags.length === 0) return 'Aucun';
+          return flags.some((flag) => flag.severity === 'restriction') ? 'Eleve' : 'A verifier';
         })(),
         riskBadgeClass: (() => {
           const flags = abuseFlagsByUser[user.id] || [];
@@ -264,9 +264,9 @@ export default function UsersPage() {
         })(),
         riskDetails: (() => {
           const flags = abuseFlagsByUser[user.id] || [];
-          if (flags.length === 0) return 'No open flags';
+          if (flags.length === 0) return 'Aucun signalement ouvert';
           const signalCount = flags.reduce((acc, flag) => acc + Number(flag.signal_count || 0), 0);
-          return `${flags.length} open flag${flags.length > 1 ? 's' : ''} / ${signalCount} signals`;
+          return `${flags.length} signalement${flags.length > 1 ? 's' : ''} ouvert${flags.length > 1 ? 's' : ''} / ${signalCount} signalement${signalCount > 1 ? 's' : ''}`;
         })(),
       })),
     [filteredUsers, abuseFlagsByUser]
@@ -296,21 +296,21 @@ export default function UsersPage() {
     <AdminLayout>
       <div style={styles.headerWrap}>
         <div>
-          <h1 className="page-title" style={{ marginBottom: 6 }}>User Operations</h1>
-          <p style={styles.subtitle}>Monitor account health, moderate user access, and review role distribution quickly.</p>
+          <h1 className="page-title" style={{ marginBottom: 6 }}>Gestion des utilisateurs</h1>
+          <p style={styles.subtitle}>Surveillez la sante des comptes, moderez les acces et analysez la repartition des roles.</p>
         </div>
         <button className="btn btn-secondary" onClick={() => void loadUsers()}>
-          Refresh
+          Actualiser
         </button>
       </div>
 
       <div style={styles.summaryGrid}>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.total}</div><div style={styles.summaryLabel}>Visible Users</div></div>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.active}</div><div style={styles.summaryLabel}>Active</div></div>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.suspended}</div><div style={styles.summaryLabel}>Suspended</div></div>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.drivers}</div><div style={styles.summaryLabel}>Drivers</div></div>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.riders}</div><div style={styles.summaryLabel}>Riders</div></div>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.riskFlagged}</div><div style={styles.summaryLabel}>Open Risk Flags</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.total}</div><div style={styles.summaryLabel}>Utilisateurs visibles</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.active}</div><div style={styles.summaryLabel}>Actifs</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.suspended}</div><div style={styles.summaryLabel}>Suspendus</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.drivers}</div><div style={styles.summaryLabel}>Chauffeurs</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.riders}</div><div style={styles.summaryLabel}>Passagers</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{stats.riskFlagged}</div><div style={styles.summaryLabel}>Risques ouverts</div></div>
       </div>
 
       <div className="card" style={{ marginBottom: 14 }}>
@@ -321,7 +321,7 @@ export default function UsersPage() {
               className={`btn ${filter === f ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setFilter(f)}
             >
-              {f === 'all' ? 'All Users' : f.charAt(0).toUpperCase() + f.slice(1)}
+                {f === 'all' ? 'Tous les utilisateurs' : f === 'active' ? 'Actifs' : f === 'suspended' ? 'Suspendus' : f === 'riders' ? 'Passagers' : 'Chauffeurs'}
             </button>
           ))}
         </div>
@@ -329,7 +329,7 @@ export default function UsersPage() {
         <input
           type="text"
           className="form-input"
-          placeholder="Search by name, phone, role, or user ID..."
+          placeholder="Rechercher par nom, telephone, role ou identifiant..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ maxWidth: 460 }}
@@ -337,15 +337,15 @@ export default function UsersPage() {
       </div>
 
       {loading ? (
-        <DataState kind="loading" title="Loading users" message="Fetching profile records from the operations database." />
+        <DataState kind="loading" title="Chargement des utilisateurs" message="Recuperation des profils depuis la base operationnelle." />
       ) : error ? (
-        <DataState kind="error" title="Users unavailable" message={error} actionLabel="Retry" onAction={() => void loadUsers()} />
+        <DataState kind="error" title="Utilisateurs indisponibles" message={error} actionLabel="Reessayer" onAction={() => void loadUsers()} />
       ) : filteredUserRows.length === 0 ? (
         <DataState
           kind="empty"
-          title="No users found"
-          message="Try changing filters or search terms to locate the expected profile."
-          actionLabel="Reset Filters"
+          title="Aucun utilisateur trouve"
+          message="Essayez de modifier les filtres ou la recherche pour trouver le profil attendu."
+          actionLabel="Reinitialiser les filtres"
           onAction={() => {
             setFilter('all');
             setSearchTerm('');
@@ -356,12 +356,12 @@ export default function UsersPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>User</th>
-                <th>Phone</th>
+                <th>Utilisateur</th>
+                <th>Telephone</th>
                 <th>Role</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Risk</th>
+                <th>Statut</th>
+                <th>Cree le</th>
+                <th>Risque</th>
                 <th>Moderation</th>
               </tr>
             </thead>
@@ -379,7 +379,7 @@ export default function UsersPage() {
           </table>
 
           <div style={styles.footerText}>
-            Showing {filteredUserRows.length} of {users.length} users
+            Affichage de {filteredUserRows.length} utilisateur(s) sur {users.length}
           </div>
         </div>
       )}

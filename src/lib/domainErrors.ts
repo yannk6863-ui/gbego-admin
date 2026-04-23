@@ -10,24 +10,24 @@ export const DOMAIN_ERROR_CODE = {
   SERVICE_UNAVAILABLE_ZONE: "service_unavailable_zone",
 } as const;
 
-export function getAdminErrorMessage(code?: string, fallback = "An error occurred.") {
+export function getAdminErrorMessage(code?: string, fallback = "Une erreur est survenue.") {
   switch (code) {
     case DOMAIN_ERROR_CODE.NO_DRIVER_AVAILABLE:
-      return "No driver is available right now.";
+      return "Aucun chauffeur n'est disponible pour le moment.";
     case DOMAIN_ERROR_CODE.ACTIVE_RIDE_EXISTS:
-      return "This account already has an active ride.";
+      return "Ce compte a deja une course active.";
     case DOMAIN_ERROR_CODE.RIDE_ALREADY_TAKEN:
-      return "This ride was already taken by another driver.";
+      return "Cette course a deja ete prise par un autre chauffeur.";
     case DOMAIN_ERROR_CODE.REQUEST_EXPIRED:
-      return "This request has expired.";
+      return "Cette demande a expire.";
     case DOMAIN_ERROR_CODE.DRIVER_NOT_ELIGIBLE:
-      return "The driver is no longer eligible to accept this ride.";
+      return "Le chauffeur n'est plus eligible pour accepter cette course.";
     case DOMAIN_ERROR_CODE.INVALID_OTP:
-      return "The OTP code is invalid or expired.";
+      return "Le code OTP est invalide ou expire.";
     case DOMAIN_ERROR_CODE.RIDE_NOT_FOUND:
-      return "Ride not found.";
+      return "Course introuvable.";
     case DOMAIN_ERROR_CODE.UNAUTHORIZED_TRANSITION:
-      return "This action is not allowed for the current ride state.";
+      return "Cette action n'est pas autorisee pour l'etat actuel de la course.";
     case DOMAIN_ERROR_CODE.SERVICE_UNAVAILABLE_ZONE:
       return "Service indisponible pour la zone demandee.";
     default:

@@ -50,6 +50,21 @@ const getStatusBadge = (status: string) => {
   return statusMap[status] || 'badge-pending';
 };
 
+const formatStatusLabel = (status: string) => {
+  if (status === 'open') return 'Ouvert';
+  if (status === 'in_progress') return 'En cours';
+  if (status === 'resolved') return 'Resolu';
+  if (status === 'closed') return 'Ferme';
+  return status;
+};
+
+const formatPriorityLabel = (priority: string) => {
+  if (priority === 'high') return 'Elevee';
+  if (priority === 'medium') return 'Moyenne';
+  if (priority === 'low') return 'Faible';
+  return priority;
+};
+
 type TicketCardView = {
   id: string;
   subject: string;
@@ -76,15 +91,15 @@ const TicketCard = memo(function TicketCard({ row, onSelect }: TicketCardProps) 
         <div style={styles.ticketTopRow}>
           <div style={{ minWidth: 0 }}>
             <div style={styles.ticketSubject}>{row.subject}</div>
-            <div style={styles.ticketMeta}>User: {row.userPhone} · {row.createdAtText}</div>
+            <div style={styles.ticketMeta}>Utilisateur : {row.userPhone} · {row.createdAtText}</div>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            <span className={`badge ${row.priorityBadgeClass}`}>{row.priority}</span>
-            <span className={`badge ${row.statusBadgeClass}`}>{row.status}</span>
+            <span className={`badge ${row.priorityBadgeClass}`}>{formatPriorityLabel(row.priority)}</span>
+            <span className={`badge ${row.statusBadgeClass}`}>{formatStatusLabel(row.status)}</span>
           </div>
         </div>
         <div style={styles.ticketPreview}>{row.description}</div>
-        <div style={styles.ticketFooter}>Updated {row.updatedAtText}</div>
+        <div style={styles.ticketFooter}>Mis a jour : {row.updatedAtText}</div>
       </div>
     </button>
   );
@@ -124,7 +139,7 @@ export default function SupportPage() {
       setThreadMessages((data || []) as SupportTicketMessage[]);
     } catch (err) {
       console.error('Error loading support thread:', err);
-      setThreadError('Unable to load ticket messages.');
+      setThreadError('Impossible de charger les messages du ticket.');
       setThreadMessages([]);
     } finally {
       setThreadLoading(false);
@@ -154,7 +169,7 @@ export default function SupportPage() {
       setTickets(data || []);
     } catch (err) {
       console.error('Error loading tickets:', err);
-      setError('Unable to load support tickets.');
+      setError('Impossible de charger les tickets de support.');
     } finally {
       setLoading(false);
     }
@@ -204,7 +219,7 @@ export default function SupportPage() {
       await loadTickets();
     } catch (err) {
       console.error('Error updating ticket:', err);
-      alert('Failed to update ticket status');
+      alert('Echec de la mise a jour du statut du ticket');
     } finally {
       setActionLoading(false);
     }
@@ -212,7 +227,7 @@ export default function SupportPage() {
 
   const handleAddResponse = async (ticketId: string) => {
     if (!responseText.trim()) {
-      alert('Please enter a response');
+      alert('Veuillez saisir une reponse');
       return;
     }
 
@@ -254,7 +269,7 @@ export default function SupportPage() {
       await loadTickets();
     } catch (err) {
       console.error('Error adding response:', err);
-      alert('Failed to add response');
+      alert("Echec de l'ajout de la reponse");
     } finally {
       setActionLoading(false);
     }
@@ -278,14 +293,14 @@ export default function SupportPage() {
       tickets.map((ticket) => ({
         id: ticket.id,
         subject: ticket.subject,
-        userPhone: ticket.profiles?.phone || 'N/A',
-        createdAtText: new Date(ticket.created_at).toLocaleString(),
-        updatedAtText: new Date(ticket.updated_at).toLocaleString(),
+        userPhone: ticket.profiles?.phone || 'N/D',
+        createdAtText: new Date(ticket.created_at).toLocaleString('fr-FR'),
+        updatedAtText: new Date(ticket.updated_at).toLocaleString('fr-FR'),
         priority: ticket.priority,
         status: ticket.status,
         priorityBadgeClass: getPriorityBadge(ticket.priority),
         statusBadgeClass: getStatusBadge(ticket.status),
-        description: ticket.description || ticket.message || 'No description provided.',
+        description: ticket.description || ticket.message || 'Aucune description fournie.',
         source: ticket,
       })),
     [tickets]
@@ -301,24 +316,24 @@ export default function SupportPage() {
     <AdminLayout>
       <div style={styles.headerWrap}>
         <div>
-          <h1 className="page-title" style={{ marginBottom: 6 }}>Support Operations</h1>
-          <p style={styles.subtitle}>Track, prioritize and resolve customer issues with a clear support workflow.</p>
+          <h1 className="page-title" style={{ marginBottom: 6 }}>Gestion du support</h1>
+          <p style={styles.subtitle}>Suivez, priorisez et resolvez les demandes clients avec un flux de support clair.</p>
         </div>
         <button className="btn btn-secondary" onClick={() => void loadTickets()}>
-          Refresh
+          Actualiser
         </button>
       </div>
 
       <div style={styles.summaryGrid}>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{summary.total}</div><div style={styles.summaryLabel}>Visible Tickets</div></div>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{summary.open}</div><div style={styles.summaryLabel}>Open</div></div>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{summary.inProgress}</div><div style={styles.summaryLabel}>In Progress</div></div>
-        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{summary.high}</div><div style={styles.summaryLabel}>High Priority</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{summary.total}</div><div style={styles.summaryLabel}>Tickets visibles</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{summary.open}</div><div style={styles.summaryLabel}>Ouverts</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{summary.inProgress}</div><div style={styles.summaryLabel}>En cours</div></div>
+        <div className="card" style={styles.summaryCard}><div style={styles.summaryValue}>{summary.high}</div><div style={styles.summaryLabel}>Priorite elevee</div></div>
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>
         <div style={styles.filterGroup}>
-          <div style={styles.filterLabel}>Status</div>
+          <div style={styles.filterLabel}>Statut</div>
           <div className="filters" style={{ marginBottom: 10 }}>
             {STATUS_FILTERS.map((status) => (
               <button
@@ -326,12 +341,12 @@ export default function SupportPage() {
                 className={`btn ${filter === status ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => setFilter(status)}
               >
-                {status.replace('_', ' ')}
+                {status === 'open' ? 'ouvert' : status === 'in_progress' ? 'en cours' : status === 'resolved' ? 'resolu' : 'tous'}
               </button>
             ))}
           </div>
 
-          <div style={styles.filterLabel}>Category</div>
+          <div style={styles.filterLabel}>Priorite</div>
           <div className="filters" style={{ marginBottom: 0 }}>
             {PRIORITY_FILTERS.map((priority) => (
               <button
@@ -339,7 +354,7 @@ export default function SupportPage() {
                 className={`btn ${priorityFilter === priority ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => setPriorityFilter(priority)}
               >
-                {priority}
+                {priority === 'all' ? 'toutes' : priority === 'high' ? 'elevee' : priority === 'medium' ? 'moyenne' : 'faible'}
               </button>
             ))}
           </div>
@@ -347,15 +362,15 @@ export default function SupportPage() {
       </div>
 
       {loading ? (
-        <DataState kind="loading" title="Loading support queue" message="Please wait while tickets are being fetched." />
+        <DataState kind="loading" title="Chargement de la file de support" message="Veuillez patienter pendant la recuperation des tickets." />
       ) : error ? (
-        <DataState kind="error" title="Support queue unavailable" message={error} actionLabel="Retry" onAction={() => void loadTickets()} />
+        <DataState kind="error" title="File de support indisponible" message={error} actionLabel="Reessayer" onAction={() => void loadTickets()} />
       ) : tickets.length === 0 ? (
         <DataState
           kind="empty"
-          title="No tickets for this filter"
-          message="Try another status or priority filter to view more support conversations."
-          actionLabel="Reset Filters"
+          title="Aucun ticket pour ce filtre"
+          message="Essayez un autre statut ou niveau de priorite pour afficher plus de conversations."
+          actionLabel="Reinitialiser les filtres"
           onAction={() => {
             setFilter('all');
             setPriorityFilter('all');
@@ -373,36 +388,36 @@ export default function SupportPage() {
         <div className="modal-overlay" onClick={closeDetail}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={styles.modalLarge}>
             <div style={styles.modalHeader}>
-              <h3 style={{ margin: 0, fontSize: 20 }}>Ticket Detail</h3>
-              <button className="btn btn-secondary" onClick={closeDetail}>Close</button>
+              <h3 style={{ margin: 0, fontSize: 20 }}>Detail du ticket</h3>
+              <button className="btn btn-secondary" onClick={closeDetail}>Fermer</button>
             </div>
 
             <div style={styles.detailGrid}>
-              <div style={styles.detailItem}><strong>User</strong><span>{selectedTicket.profiles?.phone || 'N/A'}</span></div>
-              <div style={styles.detailItem}><strong>Created</strong><span>{new Date(selectedTicket.created_at).toLocaleString()}</span></div>
-              <div style={styles.detailItem}><strong>Updated</strong><span>{new Date(selectedTicket.updated_at).toLocaleString()}</span></div>
-              <div style={styles.detailItem}><strong>Priority</strong><span className={`badge ${getPriorityBadge(selectedTicket.priority)}`}>{selectedTicket.priority}</span></div>
-              <div style={styles.detailItem}><strong>Status</strong><span className={`badge ${getStatusBadge(selectedTicket.status)}`}>{selectedTicket.status}</span></div>
+              <div style={styles.detailItem}><strong>Utilisateur</strong><span>{selectedTicket.profiles?.phone || 'N/D'}</span></div>
+              <div style={styles.detailItem}><strong>Cree le</strong><span>{new Date(selectedTicket.created_at).toLocaleString('fr-FR')}</span></div>
+              <div style={styles.detailItem}><strong>Mis a jour</strong><span>{new Date(selectedTicket.updated_at).toLocaleString('fr-FR')}</span></div>
+              <div style={styles.detailItem}><strong>Priorite</strong><span className={`badge ${getPriorityBadge(selectedTicket.priority)}`}>{formatPriorityLabel(selectedTicket.priority)}</span></div>
+              <div style={styles.detailItem}><strong>Statut</strong><span className={`badge ${getStatusBadge(selectedTicket.status)}`}>{formatStatusLabel(selectedTicket.status)}</span></div>
             </div>
 
             <div style={styles.detailBlock}>
-              <div style={styles.detailTitle}>Subject</div>
+              <div style={styles.detailTitle}>Sujet</div>
               <div>{selectedTicket.subject}</div>
             </div>
 
             <div style={styles.detailBlock}>
-              <div style={styles.detailTitle}>Issue Description</div>
-              <div style={{ whiteSpace: 'pre-wrap' }}>{selectedTicket.description || selectedTicket.message || 'No description provided.'}</div>
+              <div style={styles.detailTitle}>Description du probleme</div>
+              <div style={{ whiteSpace: 'pre-wrap' }}>{selectedTicket.description || selectedTicket.message || 'Aucune description fournie.'}</div>
             </div>
 
             <div style={styles.detailBlock}>
-              <div style={styles.detailTitle}>Conversation Thread</div>
+              <div style={styles.detailTitle}>Fil de conversation</div>
               {threadLoading ? (
-                <div style={styles.threadHint}>Loading messages...</div>
+                <div style={styles.threadHint}>Chargement des messages...</div>
               ) : threadError ? (
                 <div style={styles.threadHint}>{threadError}</div>
               ) : threadMessages.length === 0 ? (
-                <div style={styles.threadHint}>No messages yet for this ticket.</div>
+                <div style={styles.threadHint}>Aucun message pour ce ticket pour le moment.</div>
               ) : (
                 <div style={styles.threadList}>
                   {threadMessages.map((item) => (
@@ -416,8 +431,8 @@ export default function SupportPage() {
                       }}
                     >
                       <div style={styles.messageMeta}>
-                        <strong>{item.sender_role === 'admin' ? 'Support Agent' : item.sender_role === 'system' ? 'System' : 'User'}</strong>
-                        <span>{new Date(item.created_at).toLocaleString()}</span>
+                        <strong>{item.sender_role === 'admin' ? 'Agent support' : item.sender_role === 'system' ? 'Systeme' : 'Utilisateur'}</strong>
+                        <span>{new Date(item.created_at).toLocaleString('fr-FR')}</span>
                       </div>
                       <div style={styles.messageText}>{item.message}</div>
                     </div>
@@ -427,12 +442,12 @@ export default function SupportPage() {
             </div>
 
             <div className="form-group" style={{ marginTop: 16 }}>
-              <label className="form-label">Reply To User</label>
+              <label className="form-label">Repondre a l'utilisateur</label>
               <textarea
                 className="form-textarea"
                 value={responseText}
                 onChange={(e) => setResponseText(e.target.value)}
-                placeholder="Write a clear response for the customer..."
+                placeholder="Ecrivez une reponse claire pour le client..."
                 disabled={actionLoading}
               />
               <button
@@ -441,21 +456,21 @@ export default function SupportPage() {
                 onClick={() => void handleAddResponse(selectedTicket.id)}
                 disabled={actionLoading || !responseText.trim()}
               >
-                {actionLoading ? 'Sending...' : 'Send Response'}
+                {actionLoading ? 'Envoi...' : 'Envoyer la reponse'}
               </button>
             </div>
 
             <div style={{ marginTop: 16 }}>
-              <div style={styles.detailTitle}>Status Actions</div>
+              <div style={styles.detailTitle}>Actions de statut</div>
               <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                 <button className="btn btn-secondary" onClick={() => void handleUpdateStatus(selectedTicket.id, 'in_progress')} disabled={actionLoading}>
-                  Mark In Progress
+                  Marquer en cours
                 </button>
                 <button className="btn btn-success" onClick={() => void handleUpdateStatus(selectedTicket.id, 'resolved')} disabled={actionLoading}>
-                  Mark Resolved
+                  Marquer resolu
                 </button>
                 <button className="btn btn-secondary" onClick={() => void handleUpdateStatus(selectedTicket.id, 'open')} disabled={actionLoading}>
-                  Reopen
+                  Reouvrir
                 </button>
               </div>
             </div>

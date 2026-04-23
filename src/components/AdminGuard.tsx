@@ -28,7 +28,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   if (loading) {
     return (
       <div style={styles.loading}>
-        <div>Loading...</div>
+        <div>Chargement...</div>
       </div>
     );
   }

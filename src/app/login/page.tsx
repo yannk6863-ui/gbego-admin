@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, checkAdminRole } from '@/lib/supabase';
+import { supabase, checkAdminAccess } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,8 +18,8 @@ export default function LoginPage() {
   const checkExistingSession = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const isAdmin = await checkAdminRole(session.user.id);
-      if (isAdmin) {
+      const adminCheck = await checkAdminAccess(session.user.id);
+      if (adminCheck.isAdmin) {
         router.push('/dashboard');
       }
     }
@@ -39,11 +39,17 @@ export default function LoginPage() {
       if (signInError) throw signInError;
 
       if (data.user) {
-        const isAdmin = await checkAdminRole(data.user.id);
+        const adminCheck = await checkAdminAccess(data.user.id);
 
-        if (!isAdmin) {
+        if (!adminCheck.isAdmin) {
           await supabase.auth.signOut();
-          setError('Access denied. Admin privileges required.');
+          if (adminCheck.reason === 'profile_not_found') {
+            setError(`Access denied: no profile found for this account (user id: ${data.user.id}).`);
+          } else if (adminCheck.reason === 'db_error') {
+            setError(`Access check failed: ${adminCheck.details ?? 'database error while reading profile role.'}`);
+          } else {
+            setError(`Access denied. Current role: ${adminCheck.role ?? 'unknown'}. Admin privileges required.`);
+          }
           setLoading(false);
           return;
         }

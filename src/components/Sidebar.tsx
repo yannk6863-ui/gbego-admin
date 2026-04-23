@@ -10,14 +10,14 @@ export default function Sidebar() {
   const router = useRouter();
 
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/drivers', label: 'Drivers' },
-    { href: '/users', label: 'Users' },
-    { href: '/rides', label: 'Rides' },
+    { href: '/dashboard', label: 'Tableau de bord' },
+    { href: '/drivers', label: 'Chauffeurs' },
+    { href: '/users', label: 'Utilisateurs' },
+    { href: '/rides', label: 'Courses' },
     { href: '/finance', label: 'Finance' },
-    { href: '/pricing', label: 'Pricing' },
+    { href: '/pricing', label: 'Tarification' },
     { href: '/support', label: 'Support' },
-    { href: '/reports', label: 'Reports' },
+    { href: '/reports', label: 'Rapports' },
   ];
 
   const handleLogout = async () => {
@@ -46,7 +46,7 @@ export default function Sidebar() {
       </nav>
       <div style={styles.footer}>
         <button onClick={handleLogout} style={styles.logoutBtn}>
-          Logout
+          Se deconnecter
         </button>
       </div>
     </aside>

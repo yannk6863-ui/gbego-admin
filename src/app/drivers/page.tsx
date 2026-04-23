@@ -139,7 +139,7 @@ export default function DriversPage() {
     try {
       let queryBuilder = supabase
         .from('driver_profiles')
-        .select('*, profiles(phone, full_name)')
+        .select('id,user_id,vehicle_type,vehicle_make,vehicle_model,vehicle_year,vehicle_plate,driver_license_url,id_card_url,approval_status,rejection_reason,created_at,profiles(phone,full_name)')
         .order('created_at', { ascending: false });
 
       if (filter !== 'all') {
@@ -173,12 +173,14 @@ export default function DriversPage() {
         setDocumentsByDriver(new Map());
       }
 
-      const [perfMap, qosMap] = await Promise.all([
+      const [perfResult, qosResult] = await Promise.allSettled([
         getDriverPerformanceStats(driverIds),
         getDriverQosFlags(driverIds),
       ]);
-      setPerformanceByDriver(perfMap);
-      setQosFlagsByDriver(qosMap);
+      if (perfResult.status === 'fulfilled') setPerformanceByDriver(perfResult.value);
+      else console.warn('Driver performance stats unavailable:', perfResult.reason);
+      if (qosResult.status === 'fulfilled') setQosFlagsByDriver(qosResult.value);
+      else console.warn('Driver QoS flags unavailable:', qosResult.reason);
     } catch (err) {
       console.error('Error loading drivers:', err);
       setError('Unable to load driver records.');

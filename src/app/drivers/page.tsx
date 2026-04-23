@@ -148,7 +148,10 @@ export default function DriversPage() {
 
       const { data, error: queryError } = await queryBuilder;
       if (queryError) throw queryError;
-      const rows = (data || []) as DriverProfile[];
+      const rows = ((data || []) as unknown as DriverProfile[]).map((row: any) => ({
+        ...row,
+        profiles: Array.isArray(row.profiles) ? (row.profiles[0] ?? { phone: null, full_name: null }) : (row.profiles ?? { phone: null, full_name: null }),
+      })) as DriverProfile[];
       setDrivers(rows);
 
       const driverIds = rows.map((row) => row.user_id);
